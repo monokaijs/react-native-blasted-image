@@ -1,14 +1,21 @@
 #import "BlastedImageModule.h"
+
+#ifndef RCT_NEW_ARCH_ENABLED
 #import <React/RCTEventEmitter.h>
 #import <SDWebImage/SDWebImage.h>
 #import <React/RCTConvert.h>
 #import <SDWebImageSVGCoder/SDWebImageSVGCoder.h>
 #import <SDWebImageAVIFCoder/SDWebImageAVIFCoder.h>
+#endif
 
+#ifndef RCT_NEW_ARCH_ENABLED
 @implementation BlastedImageModule
 {
     BOOL hasListeners;
 }
+#else
+@implementation BlastedImageModule
+#endif
 
 RCT_EXPORT_MODULE(BlastedImage);
 
@@ -23,17 +30,17 @@ RCT_EXPORT_MODULE(BlastedImage);
 
         // Add SVG support
         SDImageSVGCoder *svgCoder = [SDImageSVGCoder sharedCoder];
-        [[SDImageCodersManager sharedManager] addCoder:svgCoder];  
+        [[SDImageCodersManager sharedManager] addCoder:svgCoder];
 
         // Add AVIF support
         SDImageAVIFCoder *avifCoder = [SDImageAVIFCoder sharedCoder];
-        [[SDImageCodersManager sharedManager] addCoder:avifCoder];              
+        [[SDImageCodersManager sharedManager] addCoder:avifCoder];
     }
     return self;
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"BlastedEventLoaded", 
+    return @[@"BlastedEventLoaded",
             @"BlastedEventClearedMemory",
             @"BlastedEventClearedDisk",
             @"BlastedEventClearedAll",
@@ -41,8 +48,8 @@ RCT_EXPORT_MODULE(BlastedImage);
             ];
 }
 
-+ (BOOL)requiresMainQueueSetup { 
-    return NO; 
++ (BOOL)requiresMainQueueSetup {
+    return NO;
 }
 
 - (void)startObserving {
@@ -81,7 +88,7 @@ RCT_EXPORT_MODULE(BlastedImage);
         hybridAssets:(BOOL)hybridAssets
             cloudUrl:(NSString *)cloudUrl
              showLog:(BOOL)showLog {
-    
+
     NSString *imagePath = @"";
     NSURL *url;
     BOOL fileExistsInAssets = NO;
@@ -100,16 +107,16 @@ RCT_EXPORT_MODULE(BlastedImage);
         url = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:imagePath ofType:nil]];
 
         if (showLog) {
-            [self sendEventWithName:@"BlastedEventLog" message:[NSString stringWithFormat:@"Url:  %@", url.absoluteString]];                               
+            [self sendEventWithName:@"BlastedEventLog" message:[NSString stringWithFormat:@"Url:  %@", url.absoluteString]];
         }
     } else {
         if (hybridAssets) {
             if (showLog) {
-                [self sendEventWithName:@"BlastedEventLog" message:[NSString stringWithFormat:@"Image is not in local assets (Use URL). Local url: %@. Remote url: %@", imagePath, imageUrl]];    
+                [self sendEventWithName:@"BlastedEventLog" message:[NSString stringWithFormat:@"Image is not in local assets (Use URL). Local url: %@. Remote url: %@", imagePath, imageUrl]];
             }
         } else {
             if (showLog) {
-                [self sendEventWithName:@"BlastedEventLog" message:[NSString stringWithFormat:@"Local assets disabled. Use remote url: %@", imageUrl]]; 
+                [self sendEventWithName:@"BlastedEventLog" message:[NSString stringWithFormat:@"Local assets disabled. Use remote url: %@", imageUrl]];
             }
         }
 
@@ -119,11 +126,11 @@ RCT_EXPORT_MODULE(BlastedImage);
     return url;
 }
 
-RCT_EXPORT_METHOD(loadImage:(NSString *)imageUrl 
-                skipMemoryCache:(BOOL)skipMemoryCache 
-                hybridAssets:(BOOL)hybridAssets 
-                cloudUrl:(NSString *)cloudUrl                 
-                resolver:(RCTPromiseResolveBlock)resolve 
+RCT_EXPORT_METHOD(loadImage:(NSString *)imageUrl
+                skipMemoryCache:(BOOL)skipMemoryCache
+                hybridAssets:(BOOL)hybridAssets
+                cloudUrl:(NSString *)cloudUrl
+                resolver:(RCTPromiseResolveBlock)resolve
                 rejecter:(RCTPromiseRejectBlock)reject) {
 
     // If showing image right after setting up NativeEventEmitters (BlastedEventLog etc.) the log might not show on iOS. Fix is to add a delay before showing the image but this is not a good solution or an option for production. Lets keep it as it is for now.
@@ -157,7 +164,7 @@ RCT_EXPORT_METHOD(loadImage:(NSString *)imageUrl
             } else {
                 message = [NSString stringWithFormat:@"(NETWORK) %@", imageURL];
             }
-            
+
             [self sendEventWithName:@"BlastedEventLoaded" message:message];
             resolve(nil);
         }
@@ -167,7 +174,7 @@ RCT_EXPORT_METHOD(loadImage:(NSString *)imageUrl
 // Clear memory cache
 RCT_EXPORT_METHOD(clearMemoryCache:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     [[SDImageCache sharedImageCache] clearMemory];
-    NSString *message = @"Memory cache cleared"; 
+    NSString *message = @"Memory cache cleared";
     [self sendEventWithName:@"BlastedEventClearedMemory" message:message];
     resolve(nil);
 }
@@ -175,7 +182,7 @@ RCT_EXPORT_METHOD(clearMemoryCache:(RCTPromiseResolveBlock)resolve rejecter:(RCT
 // Clear disk cache
 RCT_EXPORT_METHOD(clearDiskCache:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     [[SDImageCache sharedImageCache] clearDiskOnCompletion:^{
-        NSString *message = @"Disk cache cleared"; 
+        NSString *message = @"Disk cache cleared";
         [self sendEventWithName:@"BlastedEventClearedDisk" message:message];
         resolve(nil);
     }];
@@ -184,7 +191,7 @@ RCT_EXPORT_METHOD(clearDiskCache:(RCTPromiseResolveBlock)resolve rejecter:(RCTPr
 // Clear all caches
 RCT_EXPORT_METHOD(clearAllCaches:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     [[SDImageCache sharedImageCache] clearWithCacheType:SDImageCacheTypeAll completion:^{
-        NSString *message = @"All caches cleared"; 
+        NSString *message = @"All caches cleared";
         [self sendEventWithName:@"BlastedEventClearedAll" message:message];
         resolve(nil);
     }];

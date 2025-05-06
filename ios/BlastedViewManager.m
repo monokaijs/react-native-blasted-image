@@ -1,13 +1,21 @@
 #import "BlastedViewManager.h"
 #import "BlastedImageModule.h"
+
+#ifndef RCT_NEW_ARCH_ENABLED
 #import <React/RCTViewManager.h>
 #import <React/RCTConvert.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <SDWebImage/SDWebImage.h>
 #import <objc/runtime.h>
+#endif
 
+#ifndef RCT_NEW_ARCH_ENABLED
 @implementation BlastedViewManager
+#else
+// The Fabric implementation is in RNBlastedImageViewComponentView.mm
+@implementation BlastedViewManager
+#endif
 
 RCT_EXPORT_MODULE(BlastedImageView);
 
@@ -50,7 +58,7 @@ RCT_CUSTOM_VIEW_PROPERTY(source, NSDictionary, UIImageView) {
     BlastedImageModule *blastedImageModule = [self.bridge moduleForClass:[BlastedImageModule class]];
 
     if ([self isEmptyString:json[@"uri"]]) {
-        [blastedImageModule sendEventWithName:@"BlastedEventLog" message:@"Source is empty"]; 
+        [blastedImageModule sendEventWithName:@"BlastedEventLog" message:@"Source is empty"];
         [view setHidden:YES];
         return;
     }
@@ -77,7 +85,7 @@ RCT_CUSTOM_VIEW_PROPERTY(source, NSDictionary, UIImageView) {
                     view.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
                     [view setNeedsDisplay];
                 });
-            }];            
+            }];
         }
 
         [view setHidden:NO];
@@ -136,5 +144,7 @@ RCT_CUSTOM_VIEW_PROPERTY(tintColor, NSString, UIImageView) {
 
     [view setNeedsDisplay];
 }
+
+#endif
 
 @end
